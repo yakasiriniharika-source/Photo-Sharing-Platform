@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String        @id @default(uuid())
+  email          String        @unique
+  passwordHash   String
+  name           String
+  role           Role
+  createdAt      DateTime      @default(now())
+  eventsCreated  Event[]       @relation("EventAdmin")
+  memberships    EventMember[]
+  photosUploaded Photo[]
+}
+
+model Event {
+  id        String        @id @default(uuid())
+  name      String
+  adminId   String
+  createdAt DateTime      @default(now())
+  admin     User          @relation("EventAdmin", fields: [adminId], references: [id], onDelete: Cascade)
+  members   EventMember[]
+  gallery   Gallery?
+  photos    Photo[]
+}
+
+model EventMember {
+  id      String @id @default(uuid())
+  eventId String
+  userId  String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+}
+
+model Photo {
+  id            String         @id @default(uuid())
+  eventId       String
+  uploadedBy    String
+  filename      String
+  storageUrl    String
+  fileSize      Int
+  createdAt     DateTime       @default(now())
+  publicId      String
+  galleryPhotos GalleryPhoto[]
+  event         Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  uploader      User           @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+}
+
+model Gallery {
+  id        String         @id @default(uuid())
+  eventId   String         @unique
+  slug      String         @unique
+  pinHash   String
+  published Boolean        @default(false)
+  createdAt DateTime       @default(now())
+  event     Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  photos    GalleryPhoto[]
+}
+
+model GalleryPhoto {
+  id        String  @id @default(uuid())
+  galleryId String
+  photoId   String
+  gallery   Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+  photo     Photo   @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@unique([galleryId, photoId])
+}
+
+enum Role {
+  ADMIN
+  MEMBER
+}
