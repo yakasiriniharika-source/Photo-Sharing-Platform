@@ -156,32 +156,35 @@ Covers, via Jest + Supertest against a real test database:
 
 ## Deployment
 
-_To be filled in once deployed — see below for the plan:_
+- **Database:** [Neon](https://neon.tech) (managed PostgreSQL)
+- **API (server):** [Render](https://render.com) — Web Service, root directory `server`,
+  build command `npm install && npx prisma generate`, start command `npm start`
+  (runs `node src/server.js`). Migrations applied via `npx prisma migrate deploy`.
+- **Client:** [Vercel](https://vercel.com) — root directory `client`, framework
+  preset Vite, build command `npm run build`, output directory `dist`. Includes
+  `client/vercel.json` with a catch-all rewrite to `index.html`, required so
+  direct/refreshed loads of client-side routes (e.g. a shared gallery link) don't
+  404 on Vercel's static host.
+- **Photo storage:** Cloudinary (already cloud-hosted, no deployment step needed)
 
-- **Database:** [hosted Postgres provider — TBD]
-- **API (server):** [hosting provider — TBD], `npm run dev`'s equivalent start
-  command in production is `node src/server.js`; run `npx prisma migrate deploy`
-  as a release step
-- **Client:** [static hosting provider — TBD], build with `npm run build`,
-  set `VITE_API_BASE_URL` to the deployed API URL at build time
-- **Photo storage:** Cloudinary (already cloud-hosted, no extra deployment step)
-
-**Live URL:** _TBD_
-**Source repository:** _TBD_
+**Live URL:** https://photo-sharing-platform-1psy-mu.vercel.app
+**Source repository:** https://github.com/yakasiriniharika-source/Photo-Sharing-Platform
 
 ## Demo Credentials
 
-_To be filled in after seeding the deployed database:_
-
 | Role | Email | Password |
 |---|---|---|
-| Admin | _TBD_ | _TBD_ |
-| Team Member | _TBD_ | _TBD_ |
+| Admin | admin@gmail.com | admin123 |
+| Team Member | member1@gmail.com | test123 |
+| Team Member (2nd) | member2@gmail.com | test123 |
 
-**Demo Gallery:** URL _TBD_ · PIN _TBD_
+**Demo Gallery:** https://photo-sharing-platform-1psy-mu.vercel.app/gallery/68d9fef52f96 · PIN `1098`
 
 ## Known Limitations
 
+- The API is hosted on Render's free tier, which spins down after ~15 minutes
+  of inactivity. The first request after idle time can take 30-60 seconds to
+  respond while the instance wakes up — subsequent requests are fast.
 - No rate limiting on `/login` or the public PIN-verification endpoint —
   a determined attacker could brute-force a 4-digit PIN. Would add
   `express-rate-limit` in a future pass.
